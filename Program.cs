@@ -21,7 +21,7 @@ namespace SpanBenchmark
 
         static void SpanLoop(long count)
         {
-            var span = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(new string(' ', 4096)));
+            Span<byte> span = stackalloc byte[4096];
 
             Stopwatch s = new Stopwatch();
             s.Start();
@@ -31,7 +31,8 @@ namespace SpanBenchmark
             for (int i = 0; i < count; i++)
             {
                 pos = (pos + 4) % span.Length - 4;
-                int x = BitConverter.ToInt32(span.Slice(pos, 4));
+                byte x = span[pos];
+                span[pos] = x;
             }
 
             s.Stop();
@@ -40,7 +41,7 @@ namespace SpanBenchmark
 
         static void ArrayLoop(long count)
         {
-            var array = Encoding.ASCII.GetBytes(new string(' ', 4096));
+            var array = new byte[4096];
 
             Stopwatch s = new Stopwatch();
             s.Start();
@@ -50,7 +51,8 @@ namespace SpanBenchmark
             for (int i = 0; i < count; i++)
             {
                 pos = (pos + 4) % array.Length - 4;
-                int x = BitConverter.ToInt32(array, pos);
+                byte x = array[pos];
+                array[pos] = x;
             }
 
             s.Stop();
