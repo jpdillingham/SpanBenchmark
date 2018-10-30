@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 
 namespace SpanBenchmark
 {
@@ -8,13 +9,21 @@ namespace SpanBenchmark
     {
         static void Main(string[] args)
         {
-            for (long i = 10000000; i < 10000000000000; i*= 10)
+            for (long i = 1000000; i < 1000000000; i*= 10)
             {
                 SpanLoop(i);
                 ArrayLoop(i);
             }
 
-            Console.WriteLine($"Done.");
+            Console.WriteLine($"Loops Done.");
+
+            for (long i = 1000000; i < 1000000000; i*= 10)
+            {
+                SpanSeek(i);
+                ArraySeek(i);
+            }
+
+            Console.WriteLine($"Seeks Done.");
 
             Console.ReadKey();
         }
@@ -57,6 +66,42 @@ namespace SpanBenchmark
 
             s.Stop();
             Console.WriteLine($"Array \t{count}\t{s.ElapsedMilliseconds}ms");
+        }
+
+        static void SpanSeek(long count) {
+            Span<byte> span = new byte[4096];
+
+            int start = new Random().Next(4095);
+            int length = new Random().Next(start, 4095) - start;
+
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            for (int i = 0; i < count; i++)
+            {
+                var bytes = span.Slice(start, length);
+            }
+
+            s.Stop();
+            Console.WriteLine($"Span seek \t{count}\t{s.ElapsedMilliseconds}ms");
+        }
+
+        static void ArraySeek(long count) {
+            var array = new byte[4096];
+
+            int start = new Random().Next(4095);
+            int length = new Random().Next(start, 4095) - start;
+
+            Stopwatch s = new Stopwatch();
+            s.Start();
+
+            for (int i = 0; i < count; i++)
+            {
+                var bytes = array.Skip(start).Take(length);
+            }
+
+            s.Stop();
+            Console.WriteLine($"Array seek \t{count}\t{s.ElapsedMilliseconds}ms");
         }
     }
 }
